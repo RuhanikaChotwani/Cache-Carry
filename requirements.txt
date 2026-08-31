@@ -1,0 +1,17 @@
+# Core Deep Learning & ONNX Runtime
+# For NVIDIA RTX 4050 on Windows 11 (CUDA 11.x / 12.x):
+# pip install onnxruntime-gpu
+onnxruntime-gpu>=1.16.0; sys_platform != 'darwin'
+onnxruntime>=1.16.0; sys_platform == 'darwin'
+
+# Computer Vision & Image Processing
+opencv-python>=4.8.0
+numpy>=1.24.0,<2.0.0
+scikit-image>=0.21.0
+scipy>=1.10.0
+Pillow>=9.5.0
+
+# Configuration & Utilities
+pyyaml>=6.0
+tqdm>=4.65.0
+requests>=2.31.0

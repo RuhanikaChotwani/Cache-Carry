@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-08-30T08:07:39Z",
+  "identities_count": 1,
+  "total_embeddings": 2,
+  "identities": {
+    "Officer_Rohan": {
+      "enrolled_images_count": 2,
+      "image_files": [
+        "face_01.png",
+        "face_02.jpeg"
+      ]
+    }
+  }
+}
