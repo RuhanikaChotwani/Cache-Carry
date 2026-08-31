@@ -1,0 +1,100 @@
+# Offline Intelligent Face Detection + Recognition Configuration
+# SIH26187: AI-Based Video Analytics Platform for Border Surveillance
+
+system:
+  device: "cuda"               # Options: "cuda", "cpu"
+  cuda_device_id: 0            # GPU index (RTX 4050 is 0)
+  num_threads: 4               # ONNX Runtime CPU intra-op threads
+
+models:
+  # Fully offline local ONNX model paths
+  detector_path: "models/det_10g.onnx"          # SCRFD 10G Face Detector (5 landmarks)
+  recognizer_path: "models/w600k_r50.onnx"      # ArcFace ResNet-50 (512-d feature vector)
+  
+  # Input inference image sizes
+  det_input_size: [640, 640]                   # [width, height] for SCRFD
+  rec_input_size: [112, 112]                   # Standard ArcFace input [width, height]
+
+detection:
+  conf_threshold: 0.50                         # Minimum confidence for face detection
+  nms_threshold: 0.40                          # Non-Maximum Suppression threshold
+
+recognition:
+  # Cosine similarity metric between 512-d L2-normalized embeddings
+  # Recommended for ArcFace: 0.42 - 0.52
+  # 0.45 is standard balance between false acceptance and false rejection
+  similarity_threshold: 0.45
+  unknown_label: "Unknown"
+  gallery_path: "data/embeddings/gallery.pkl"
+  gallery_manifest_path: "data/embeddings/manifest.json"
+
+tracking:
+  enabled: true
+  iou_threshold: 0.30                          # Minimum IoU to associate track with detection
+  max_age: 25                                  # Max frames to retain lost track
+  min_hits: 2                                  # Consecutive detections before track is considered active
+  # Recognition frequency: run ArcFace every N frames per track to conserve GPU
+  recognize_every_n_frames: 5
+
+# Hierarchical Surveillance (Person/Body Tracking -> Gated Face Recognition)
+hierarchical:
+  enabled: true
+  person_model_path: "models/yolov8n.onnx"
+  person_conf_threshold: 0.40
+  min_person_height_for_face: 85       # Minimum body pixel height before attempting face search (~25m)
+  head_region_ratio: 0.38              # Upper 38% of person bbox inspected for facial features
+
+# Distance-Aware Surveillance Range Calibration (Pinhole CCTV Optics)
+distance_estimation:
+  enabled: true
+  reference_focal_factor: 1500.0       # Calibrated for standard 6mm/8mm 1080p CCTV lens
+  # Operational ranges in meters
+  recognition_min_distance_m: 3.0      # Closer than 3m is extremely near / gate turnstile
+  recognition_max_distance_m: 25.0     # 8m - 25m: High-confidence ArcFace recognition
+  detection_max_distance_m: 50.0       # 25m - 50m: Body/Face detection + tracking (no forced recognition)
+
+quality_filter:
+  enabled: true
+  # Face size gates
+  min_face_size_recognition: 40        # Minimum height/width (px) to run ArcFace recognition
+  min_face_size_detection: 18          # Minimum height/width (px) for long-range tracking
+  min_ipd_pixels: 16.0                 # Minimum Inter-Pupillary Distance (eye-to-eye px) for recognition
+  
+  # Sharpness & Lighting
+  blur_threshold: 40.0                 # Base Laplacian variance (dynamically scaled by face size)
+  min_brightness: 25.0                 # Rejects pitch-black underexposed crops (0-255)
+  max_brightness: 240.0                # Rejects completely blown-out crops
+  
+  # Pose & Angle
+  max_yaw_ratio: 0.42                  # Rejects profile faces (turned > 35°), waits for frontal view
+
+  # Occlusion & Helmet Detection
+  helmet_check_enabled: true
+  min_face_aspect_ratio: 0.62          # Faces with h/w < 0.62 indicate partial vertical occlusion
+  forehead_occlusion_ratio: 0.45       # Non-skin headgear/helmet ratio above eye level
+
+events:
+  camera_id: "CAM-BORDER-NORTH-01"
+  emit_json_lines: true
+  events_log_path: "data/events.jsonl"
+  save_snapshots: true
+  snapshot_dir: "data/snapshots"
+  # Avoid spamming snapshots for the same track_id
+  snapshot_interval_frames: 30
+  save_unknown_alerts: true
+  save_known_alerts: true
+  save_distant_snapshots: false        # Avoid flooding disk with distant blurred keyframes
+
+visualization:
+  show_window: true
+  window_title: "SIH26187 - Hierarchical Border Surveillance Face Analytics"
+  box_thickness: 2
+  font_scale: 0.55
+  color_known: [0, 220, 0]             # BGR Green for authorized/known
+  color_unknown: [0, 0, 230]           # BGR Red for unknown/intruders
+  color_person: [200, 200, 200]        # BGR Gray/Silver for distant person body
+  color_helmet: [0, 165, 255]          # BGR Orange for helmeted person / partial face
+  color_distant: [0, 215, 255]         # BGR Amber/Gold for distant approaching targets
+  show_fps: true
+  show_landmarks: true
+  show_distance: true                  # Display live estimated distance in meters badge
