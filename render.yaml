@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ibvap-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    plan: free
+    envVars:
+      - key: IBVAP_MOCK_AI
+        value: "false"
+      - key: IBVAP_ANALYSIS_FPS
+        value: "2"
+      - key: PYTHONUNBUFFERED
+        value: "1"
