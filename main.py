@@ -351,7 +351,7 @@ def run_pipeline(
 
     # Video Capture
     stream_source: str | int = source
-    if isinstance(source, str) and source.isdigit():
+    if isinstance(source, str) and source.isdicd ():
         stream_source = int(source)
 
     print(f"[Pipeline] Opening video input source: {stream_source}")

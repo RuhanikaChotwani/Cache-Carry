@@ -1,0 +1,5 @@
+# Keep backend/models/ folder tracked in git
+# Place ONNX models here:
+# - face_detection_yunet_2023mar.onnx
+# - face_recognition_sface_2021dec.onnx
+# - license_plate_detection_lpd_yunet_2023mar.onnx

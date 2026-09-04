@@ -1,0 +1,14 @@
+node_modules/
+.venv/
+venv/
+backend/
+data/
+*.jpeg
+*.jpg
+mp2.jpeg
+mp.jpeg
+dist/
+.git/
+*.log
+requirements.txt
+*.py
