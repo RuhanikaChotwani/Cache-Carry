@@ -3,7 +3,7 @@
  * Base URL configurable via VITE_API_BASE, defaults to http://127.0.0.1:8000
  */
 
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
+export const API_BASE = import.meta.env.VITE_API_BASE || "https://ibvap-backend-25vy.onrender.com";
 
 async function apiFetch(path, options = {}) {
   try {
