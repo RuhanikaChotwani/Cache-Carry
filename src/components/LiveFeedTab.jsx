@@ -104,16 +104,22 @@ export default function LiveFeedTab({ onNavigateToWatchlist }) {
 
     try {
       if (selectedSourceType === "webcam") {
-        // Try Python backend first
+        // Check if backend is remote (e.g. Render cloud server has no local hardware webcam)
+        const isRemoteBackend = !api.API_BASE.includes("localhost") && !api.API_BASE.includes("127.0.0.1");
         let backendOk = false;
-        try {
-          const res = await api.startWebcam(0);
-          if (res && !res.detail) backendOk = true;
-        } catch {
-          backendOk = false;
+
+        if (!isRemoteBackend) {
+          try {
+            const res = await api.startWebcam(0);
+            if (res && res.running && !res.camera_error && !res.detail) {
+              backendOk = true;
+            }
+          } catch {
+            backendOk = false;
+          }
         }
 
-        // If backend offline, use browser webcam (no AI overlay)
+        // For remote cloud server (Render) or when local camera fails, use browser webcam directly
         if (!backendOk) {
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -123,6 +129,8 @@ export default function LiveFeedTab({ onNavigateToWatchlist }) {
             setLocalWebcamStream(stream);
             setLocalWebcamActive(true);
             setFeedReady(true);
+            setUploadError(null);
+            setFeedError(null);
           } catch (camErr) {
             throw new Error(`Webcam permission denied or camera unavailable: ${camErr.message}`);
           }
@@ -584,6 +592,8 @@ export default function LiveFeedTab({ onNavigateToWatchlist }) {
             }}>
               {isBackendActive
                 ? `AI ACTIVE (${displayedFps} FPS)`
+                : localWebcamActive
+                ? "BROWSER WEBCAM ACTIVE"
                 : isFeedActive
                 ? "VIDEO PLAYING (No AI)"
                 : cameraError

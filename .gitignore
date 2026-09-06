@@ -50,6 +50,7 @@ backend/sample_videos/*.mp4
 backend/sample_videos/*.avi
 backend/sample_videos/*.mov
 backend/sample_videos/*.mkv
+!backend/sample_videos/synthetic_cctv.mp4
 !backend/sample_videos/.gitkeep
 !backend/sample_videos/README.md
 !backend/sample_videos/manifest.json
@@ -94,3 +95,5 @@ Thumbs.db
 
 # Vercel
 .vercel
+.vercel
+.env*
